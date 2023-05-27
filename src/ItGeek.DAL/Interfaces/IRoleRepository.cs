@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ItGeek.DAL.Enum
+namespace ItGeek.DAL.Interfaces
 {
-	public enum SocialName
+	internal interface IRoleRepository
 	{
-
 	}
 }

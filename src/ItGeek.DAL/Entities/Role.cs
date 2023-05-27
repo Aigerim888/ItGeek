@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ItGeek.DAL.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace ItGeek.DAL.Entities
 {
 	public class Role:BaseEntity
 	{
-		public string Name { get; set; }
+		public RoleName RoleName  { get; set; }
 	}
 }
