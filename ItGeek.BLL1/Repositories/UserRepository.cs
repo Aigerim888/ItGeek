@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ItGeek.DAL.Interfaces;
 namespace ItGeek.BLL1.Repositories
 {
-	public class UserRepository : GenericRepositoryAsync<User>, I
+	public class UserRepository : GenericRepositoryAsync<User>, IUserRepository
 	{
 		public UserRepository(AppDbContext db) : base(db)
 		{

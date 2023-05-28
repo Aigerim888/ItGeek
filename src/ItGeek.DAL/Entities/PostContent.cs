@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ItGeek.DAL.Entities
 {
-	public class PostContent
+	public class PostContent:BaseEntity
 	{
 		public int PostId { get; set; }
 		public Post Post { get; set; }
