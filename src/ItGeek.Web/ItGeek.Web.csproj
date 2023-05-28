@@ -10,4 +10,9 @@
     <None Include="wwwroot\js\site.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\ItGeek.BLL1\ItGeek.BLL1.csproj" />
+    <ProjectReference Include="..\ItGeek.DAL\ItGeek.DAL.csproj" />
+  </ItemGroup>
+
 </Project>
