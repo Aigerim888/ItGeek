@@ -8,26 +8,30 @@ using System.Threading.Tasks;
 
 namespace ItGeek.BLL1
 {
-	public class UnitOfWork
-	{
+    public class UnitOfWork
+    {
         private readonly AppDbContext _db;
         public UnitOfWork(AppDbContext db)
         {
-                _db= db;    
+            _db = db;
         }
         private AuthorRepository _authorRepository;
         private CategoryRepository _categoryRepository;
         private CommentRepository _commentRepository;
-        private PostRepository _postRepository; 
+        private PostRepository _postRepository;
         private RoleRepository _roleRepository;
         private TagRepository _tagRepository;
         private UserRepository _userRepository;
+        private AuthorSocialRepository _authorSocialRepository;
+        private MenuRepository _menuRepository;
+        private MenuItemRepository _menuItemRepository;
+        private UserProfileRepository _userProfileRepository;
 
         public AuthorRepository AuthorRepository
         {
-            get 
-            { 
-                if(_authorRepository == null)
+            get
+            {
+                if (_authorRepository == null)
                 {
                     _authorRepository = new AuthorRepository(_db);
                 }
@@ -38,7 +42,7 @@ namespace ItGeek.BLL1
         {
             get
             {
-                if(_categoryRepository == null)
+                if (_categoryRepository == null)
                 {
                     _categoryRepository = new CategoryRepository(_db);
                 }
@@ -49,7 +53,7 @@ namespace ItGeek.BLL1
         {
             get
             {
-                if(_commentRepository == null)
+                if (_commentRepository == null)
                 {
                     _commentRepository = new CommentRepository(_db);
                 }
@@ -60,7 +64,7 @@ namespace ItGeek.BLL1
         {
             get
             {
-                if(_postRepository == null)
+                if (_postRepository == null)
                 {
                     _postRepository = new PostRepository(_db);
                 }
@@ -99,6 +103,50 @@ namespace ItGeek.BLL1
                     _userRepository = new UserRepository(_db);
                 }
                 return _userRepository;
+            }
+        }
+        public AuthorSocialRepository AuthorSocialRepository
+        {
+            get
+            {
+                if (_authorSocialRepository == null)
+                {
+                    _authorSocialRepository = new AuthorSocialRepository(_db);
+                }
+                return _authorSocialRepository;
+            }
+        }
+        public MenuRepository MenuRepository
+        {
+            get
+            {
+                if(_menuRepository == null)
+                {
+                    _menuRepository = new MenuRepository(_db);
+                }
+                return _menuRepository;
+            }
+        }
+        public MenuItemRepository MenuItemRepository
+        {
+            get
+            {
+                if(_menuItemRepository == null)
+                {
+                    _menuItemRepository = new MenuItemRepository(_db);  
+                }
+                return _menuItemRepository;
+            }
+        }
+        public UserProfileRepository UserProfileRepository
+        {
+            get
+            {
+                if(_userProfileRepository == null)
+                {
+                    _userProfileRepository = new UserProfileRepository(_db);
+                }
+                return _userProfileRepository;
             }
         }
     }
