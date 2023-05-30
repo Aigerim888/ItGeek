@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ItGeek.DAL.Entities.Author>
+﻿@model IEnumerable<ItGeek.DAL.Entities.Post>
 
 @{
     ViewData["Title"] = "Index";
@@ -14,22 +14,16 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Slug)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Regalia)
+                @Html.DisplayNameFor(model => model.CreatedAt)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                @Html.DisplayNameFor(model => model.EditedAt)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.AuthorImage)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
+                @Html.DisplayNameFor(model => model.IsDeleted)
             </th>
             <th></th>
         </tr>
@@ -39,22 +33,16 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.Slug)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Regalia)
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Description)
+                    @Html.DisplayFor(modelItem => item.EditedAt)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.AuthorImage)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Email)
+                    @Html.DisplayFor(modelItem => item.IsDeleted)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
