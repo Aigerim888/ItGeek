@@ -12,8 +12,8 @@ namespace ItGeek.DAL.Entities
 		public string Slug { get; set; }
 		public DateTime CreatedAt { get;set; }
 		public DateTime UpdatedAt { get;set;}
-		public User CreatedBy { get; set; }
-		public User EditedBy { get; set; }
+		public User? CreatedBy { get; set; }
+		public User? EditedBy { get; set; }
 
 		public bool IsDeleted { get; set; } = false;
 		public List<Author> Authors { get; } = new();
