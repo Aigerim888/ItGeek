@@ -7,13 +7,39 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\Admin\Views\Shared\**" />
-    <Content Remove="Areas\Admin\Views\Shared\**" />
-    <EmbeddedResource Remove="Areas\Admin\Views\Shared\**" />
-    <None Remove="Areas\Admin\Views\Shared\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
+    <None Include="wwwroot\img\ad-cube.jpg" />
+    <None Include="wwwroot\img\ad-horizontal.jpg" />
+    <None Include="wwwroot\img\ad-vertical.jpg" />
+    <None Include="wwwroot\img\blog\diy\1.jpg" />
+    <None Include="wwwroot\img\blog\diy\2.jpg" />
+    <None Include="wwwroot\img\blog\diy\3.jpg" />
+    <None Include="wwwroot\img\blog\electronics\1.jpg" />
+    <None Include="wwwroot\img\blog\electronics\2.jpg" />
+    <None Include="wwwroot\img\blog\electronics\3.jpg" />
+    <None Include="wwwroot\img\blog\electronics\4.jpg" />
+    <None Include="wwwroot\img\blog\electronics\5.jpg" />
+    <None Include="wwwroot\img\blog\electronics\electronics.jpg" />
+    <None Include="wwwroot\img\blog\electronics\_test.jpg" />
+    <None Include="wwwroot\img\blog\lifehacks\14.jpg" />
+    <None Include="wwwroot\img\blog\lifehacks\15.jpg" />
+    <None Include="wwwroot\img\blog\lifehacks\16.jpg" />
+    <None Include="wwwroot\img\blog\lifehacks\17.jpg" />
+    <None Include="wwwroot\img\blog\news\6.jpg" />
+    <None Include="wwwroot\img\blog\news\7.jpg" />
+    <None Include="wwwroot\img\blog\news\8.jpg" />
+    <None Include="wwwroot\img\blog\news\9.jpg" />
+    <None Include="wwwroot\img\blog\reviews\10.jpg" />
+    <None Include="wwwroot\img\blog\reviews\11.jpg" />
+    <None Include="wwwroot\img\blog\reviews\12.jpg" />
+    <None Include="wwwroot\img\blog\reviews\13.jpg" />
+    <None Include="wwwroot\img\example.jpg" />
+    <None Include="wwwroot\img\favicon\apple-touch-icon-114x114.png" />
+    <None Include="wwwroot\img\favicon\apple-touch-icon-180x180.png" />
+    <None Include="wwwroot\img\favicon\apple-touch-icon-72x72.png" />
+    <None Include="wwwroot\img\favicon\apple-touch-icon.png" />
+    <None Include="wwwroot\img\favicon\favicon.ico" />
+    <None Include="wwwroot\img\vk-witget.jpg" />
     <None Include="wwwroot\js\site.js" />
   </ItemGroup>
 
