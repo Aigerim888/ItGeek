@@ -2,6 +2,7 @@
 using ItGeek.DAL.Entities;
 using ItGeek.Web.Areas.Admin.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Hosting;
 
 namespace ItGeek.Web.Areas.Admin.Controllers
@@ -10,10 +11,12 @@ namespace ItGeek.Web.Areas.Admin.Controllers
     public class PostsController : Controller
     {
         private readonly UnitOfWork _uow;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public PostsController(UnitOfWork uow)
+        public PostsController(UnitOfWork uow, IWebHostEnvironment hostEnvironment)
         {
             _uow = uow;
+            _hostEnvironment = hostEnvironment;
         }
         public async Task<IActionResult> Index()
         {
@@ -26,6 +29,7 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 PostContent onePostsContent = allPostsContent.First(x => x.PostId == onePost.Id);
                 post.Add(new PostViewModel()
                 {
+                    Id = onePost.Id,
                     Slug = onePost.Slug,
                     IsDeleted = onePost.IsDeleted,
                     Title = onePostsContent.Title,
@@ -40,21 +44,38 @@ namespace ItGeek.Web.Areas.Admin.Controllers
         }
 
 
-
-
         public async Task<IActionResult> Details(int id)
         {
+            Post post = await _uow.PostRepository.GetByIdAsync(id);
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
+            PostViewModel postViewModel = new PostViewModel()
+            {
+                Id = id,
+                Slug = post.Slug,
+                IsDeleted = post.IsDeleted,
+                Title = postContent.Title,
+                PostBody = postContent.PostBody,
+                PostImage = postContent.PostImage,
+                CommentsClosed = postContent.CommentsClosed
+                
+            };
 
-            return View(await _uow.PostRepository.GetByIdAsync(id));
+            return View(postViewModel);
         }
         public async Task<IActionResult> Delete(int id)
         {
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
+            if (postContent != null)
+            {
+                await _uow.PostContentRepository.DeleteAsync(postContent);
+            }
+          
             Post post = await _uow.PostRepository.GetByIdAsync(id);
-
-            if (post != null)
+            if(post!=null)
             {
                 await _uow.PostRepository.DeleteAsync(post);
             }
+           
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
@@ -65,50 +86,118 @@ namespace ItGeek.Web.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(PostViewModel postViewModel)
         {
-            Post post = new Post()
+            if (ModelState.IsValid)
             {
-                Id = postViewModel.Id,
-                Slug = postViewModel.Slug,
-                IsDeleted = postViewModel.IsDeleted,
-                CreatedAt = DateTime.Now,
-                EditedAt = DateTime.Now,
-            };
-            PostContent postContent = new PostContent()
-            {
-                PostId = postViewModel.Id,
-                Post = post,
-                Title = postViewModel.Title,
-                PostBody = postViewModel.PostBody,
-                PostImage = postViewModel.PostImage,
-                CommentsNum = 0,
-                CommentsClosed = postViewModel.CommentsClosed
+                postViewModel.PostImage = await ProcessUploadFile(postViewModel);
+                Post post = new Post()
+                {
+                    Id = postViewModel.Id,
+                    Slug = postViewModel.Slug,
+                    IsDeleted = postViewModel.IsDeleted,
+                    CreatedAt = DateTime.Now,
+                    EditedAt = DateTime.Now,
+                };
+                PostContent postContent = new PostContent()
+                {
+                    PostId = postViewModel.Id,
+                    Post = post,
+                    Title = postViewModel.Title,
+                    PostBody = postViewModel.PostBody,
+                    PostImage = postViewModel.PostImage,
+                    CommentsNum = 0,
+                    CommentsClosed = postViewModel.CommentsClosed
 
-            };
-            await _uow.PostRepository.InsertAsync(post);
-            await _uow.PostContentRepository.InsertAsync(postContent);
-            return RedirectToAction(nameof(Index));
+                };
+                await _uow.PostRepository.InsertAsync(post);
+                await _uow.PostContentRepository.InsertAsync(postContent);
+                return RedirectToAction(nameof(Index));
 
+            }
+            return View(postViewModel);
 
         }
         [HttpGet]
         public async Task<IActionResult> Update(int id)
         {
             Post post = await _uow.PostRepository.GetByIdAsync(id);
-            if (post != null)
+            if (post == null)
             {
                 return NotFound();
             }
-            return View(post);
+           
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
+            
+            PostViewModel postViewModel = new PostViewModel()
+            {
+                Id= id, 
+                Slug = post.Slug,
+                IsDeleted = post.IsDeleted,
+                Title = postContent.Title,
+                PostBody = postContent.PostBody,
+                PostImage = postContent.PostImage,
+                CommentsClosed = postContent.CommentsClosed
+            };
+
+            return View(postViewModel);
         }
         [HttpPost]
-        public async Task<IActionResult> Update(Post post)
+        public async Task<IActionResult> Update(PostViewModel postViewModel)
         {
             if (ModelState.IsValid)
             {
+                Post post = await _uow.PostRepository.GetByIdAsync(postViewModel.Id);
+
+                post.Slug = postViewModel.Slug;
+                post.IsDeleted = postViewModel.IsDeleted;
+                post.EditedAt = DateTime.Now;
+                //TODO:post.EditedBy = User;
+
                 await _uow.PostRepository.UpdateAsync(post);
+
+                //Получим Постконтент
+                PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(postViewModel.Id);
+                
+                //Заполняем Пост контент из формы
+                
+                postContent.Title = postViewModel.Title;
+                postContent.PostBody = postViewModel.PostBody;
+                postContent.CommentsClosed = postViewModel.CommentsClosed;
+
+                //Получим новую картинку
+                if (postViewModel.ImageFile != null)
+                {
+                    string newImage = await ProcessUploadFile(postViewModel);
+                    postContent.PostImage = newImage;
+                    
+                    //TODO удалить старую картинку
+                }
+
+                await _uow.PostContentRepository.UpdateAsync(postContent);
+
                 return RedirectToAction(nameof(Index));
+
             }
-            return View(post);
+            return View(postViewModel);
+
         }
+        protected async Task<string> ProcessUploadFile(PostViewModel postViewModel)
+        {
+            string uniqueFileName = "";
+            if (postViewModel.ImageFile != null)
+            {
+                string wwwRootPath = _hostEnvironment.WebRootPath;
+                string fileName = Path.GetFileNameWithoutExtension(postViewModel.ImageFile.FileName);
+                string fileExtension = Path.GetExtension(postViewModel.ImageFile.FileName);
+                uniqueFileName = fileName + DateTime.Now.ToString("yymmddssfff") + fileExtension;
+                string path = Path.Combine(wwwRootPath + "/uploads/", uniqueFileName);
+                using (var fileStream = new FileStream(path, FileMode.Create))
+                {
+                    await postViewModel.ImageFile.CopyToAsync(fileStream);
+                }
+            }
+            return uniqueFileName;
+        }
+
     }
-}
+    }
+

@@ -1,12 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ItGeek.BLL1;
+using ItGeek.DAL.Entities;
+using ItGeek.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ItGeek.Web.Controllers
 {
 	public class CategoryController : Controller
 	{
-		public IActionResult Index()
+        private readonly UnitOfWork _uow;
+
+        public CategoryController(UnitOfWork uow)
+        {
+            _uow = uow;
+        }
+        public IActionResult Index()
 		{
 			return View();
 		}
-	}
+        public async Task<IActionResult> Post(string categorySlug, string postSlug)
+        {
+            Post postOne = await _uow.PostRepository.GetBySlugAsync(postSlug);
+
+            PostContentViewModel postContent = new PostContentViewModel()
+            {
+                category = await _uow.CategoryRepository.GetBySlugAsync(categorySlug),
+                post = postOne,
+                postContent = await _uow.PostContentRepository.GetByPostIdAsync(postOne.Id),
+            };
+
+            return View(postContent);
+        }
+    }
 }
