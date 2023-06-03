@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ItGeek.DAL.Entities;
-using ItGeek.BLL;
+//using ItGeek.BLL;
 using ItGeek.BLL1;
 
 namespace ItGeek.Web.Areas.Admin.Controllers
