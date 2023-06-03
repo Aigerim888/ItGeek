@@ -22,5 +22,22 @@ namespace ItGeek.BLL1.Repositories
         {
             return await _db.Posts.Where(x => x.Slug == slug).FirstAsync();
         }
+        public async Task<List<Post>> ListByCategoryIdAsync(int categoryId)
+        {
+            Category cat =await _db.Categories.FindAsync(categoryId);
+
+            List<PostCategory> postCategory=await _db.PostCategories.Where(x => x.CategoryId == cat.Id).ToListAsync();
+           
+            List<Post> post = new List<Post>();
+
+            foreach (var pc in postCategory)
+            {
+                Post post1=await _db.Posts.Where(x=>x.Id==pc.PostId).FirstAsync();
+                post.Add(post1);
+            }
+
+            return post;
+
+		}
     }
 }

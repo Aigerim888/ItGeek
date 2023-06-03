@@ -2,6 +2,7 @@
 using ItGeek.DAL.Entities;
 using ItGeek.Web.Areas.Admin.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Hosting;
 
@@ -81,6 +82,12 @@ namespace ItGeek.Web.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
+            ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
+            ViewBag.PostCategories = new int[0];
+            ViewBag.PostAuthors = new int[0];
+            ViewBag.CategoryCount = null;
+            ViewBag.AuthorCount = null;
             return View();
         }
         [HttpPost]
@@ -108,11 +115,41 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                     CommentsClosed = postViewModel.CommentsClosed
 
                 };
-                await _uow.PostRepository.InsertAsync(post);
-                await _uow.PostContentRepository.InsertAsync(postContent);
-                return RedirectToAction(nameof(Index));
+				await _uow.PostRepository.InsertAsync(post);
+				await _uow.PostContentRepository.InsertAsync(postContent);
+
+				foreach (int catId in postViewModel.CategoryId)
+                {
+					PostCategory postCategory = new PostCategory()
+					{
+						PostId = post.Id,
+						CategoryId = catId
+					};
+					await _uow.PostCategoryRepository.InsertAsync(postCategory);
+				}
+               
+			
+                foreach(int authId in postViewModel.AuthorId)
+                {
+					PostAuthor postAuthor = new PostAuthor()
+					{
+						PostId = post.Id,
+						AuthorId = authId
+					};
+					await _uow.PostAuthorRepository.InsertAsync(postAuthor);
+				}
+				
+				return RedirectToAction(nameof(Index));
 
             }
+
+            ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
+            ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
+            ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
+            ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
+
             return View(postViewModel);
 
         }
@@ -126,7 +163,7 @@ namespace ItGeek.Web.Areas.Admin.Controllers
             }
            
             PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
-            
+            //PostAuthor postAuthor = await _uow.PostAuthorRepository.GetByIdAsync();
             PostViewModel postViewModel = new PostViewModel()
             {
                 Id= id, 
@@ -136,8 +173,14 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 PostBody = postContent.PostBody,
                 PostImage = postContent.PostImage,
                 CommentsClosed = postContent.CommentsClosed
+               
             };
-
+			ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
+			ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
+			ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(id);
+			ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(id);
+            ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
+            ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
             return View(postViewModel);
         }
         [HttpPost]
@@ -177,6 +220,12 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
 
             }
+            ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
+            ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
+            ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
+            ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
             return View(postViewModel);
 
         }

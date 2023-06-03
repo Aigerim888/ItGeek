@@ -27,6 +27,9 @@ namespace ItGeek.BLL1
         private MenuItemRepository _menuItemRepository;
         private UserProfileRepository _userProfileRepository;
         private PostContentRepository _postContentRepository;
+        private PostAuthorRepository _postAuthorRepository;
+        private PostCategoryRepository _postCategoryRepository;
+
 
         public AuthorRepository AuthorRepository
         {
@@ -159,6 +162,28 @@ namespace ItGeek.BLL1
                     _postContentRepository = new PostContentRepository(_db);
                 }
                 return _postContentRepository;
+            }
+        }
+        public PostCategoryRepository PostCategoryRepository
+        {
+            get
+            {
+                if(_postCategoryRepository == null)
+                {
+                    _postCategoryRepository = new PostCategoryRepository(_db);
+                }
+                return _postCategoryRepository;
+            }
+        }
+        public PostAuthorRepository PostAuthorRepository
+        {
+            get
+            {
+                if (_postAuthorRepository == null)
+                {
+                    _postAuthorRepository=new PostAuthorRepository(_db);
+                }
+                return _postAuthorRepository;
             }
         }
     }
