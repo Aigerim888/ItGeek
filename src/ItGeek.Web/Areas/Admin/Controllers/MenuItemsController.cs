@@ -1,6 +1,13 @@
-﻿using ItGeek.BLL1;
-using ItGeek.DAL.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using ItGeek.DAL.Entities;
+using ItGeek.BLL;
+using ItGeek.BLL1;
 
 namespace ItGeek.Web.Areas.Admin.Controllers
 {
@@ -13,60 +20,65 @@ namespace ItGeek.Web.Areas.Admin.Controllers
         {
             _uow = uow;
         }
-        public async Task<IActionResult> Index()
-        {
 
-            return View(await _uow.MenuItemRepository.ListAllAsync());
+        public async Task<IActionResult> Index(int menuid)
+        {
+            ViewBag.Id = menuid;
+            return View(await _uow.MenuItemRepository.GetByMenuIdAsync(menuid));
         }
+
         public async Task<IActionResult> Details(int id)
         {
-
             return View(await _uow.MenuItemRepository.GetByIdAsync(id));
         }
+
         public async Task<IActionResult> Delete(int id)
         {
-            MenuItem menuitem = await _uow.MenuItemRepository.GetByIdAsync(id);
-
-            if (menuitem != null)
+            MenuItem menuItem = await _uow.MenuItemRepository.GetByIdAsync(id);
+            if (menuItem != null)
             {
-                await _uow.MenuItemRepository.DeleteAsync(menuitem);
+                await _uow.MenuItemRepository.DeleteAsync(menuItem);
             }
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
-        public async Task <IActionResult> Create()
+        public async Task<IActionResult> Create(int menuid)
         {
+            ViewBag.Id = menuid;
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Create(MenuItem menuitem)
+        public async Task<IActionResult> Create(MenuItem menuItem, int menuid)
         {
-            if(ModelState.IsValid) 
+            ViewBag.Id = menuid;
+            if (ModelState.IsValid)
             {
-                await _uow.MenuItemRepository.InsertAsync(menuitem);
-                return RedirectToAction(nameof(Index));    
+            await _uow.MenuItemRepository.InsertAsync(menuItem);
+            return RedirectToAction(nameof(Index), new { menuid = menuItem.MenuId });
             }
-            return View(menuitem);
+            return View(menuItem);
         }
         [HttpGet]
-        public async Task<IActionResult> Update(int id)
+        public async Task<IActionResult> Update(int id, int menuid)
         {
-            MenuItem menuitem = await _uow.MenuItemRepository.GetByIdAsync(id);
-            if (menuitem != null)
+            MenuItem menuItem = await _uow.MenuItemRepository.GetByIdAsync(id);
+            if (menuItem == null)
             {
                 return NotFound();
             }
-            return View(menuitem);
+            ViewBag.Id = menuid;
+            return View(menuItem);
         }
         [HttpPost]
-        public async Task<IActionResult> Update(MenuItem menuitem)
+        public async Task<IActionResult> Update(MenuItem menuItem, int menuid)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                await _uow.MenuItemRepository.UpdateAsync(menuitem);
-                return RedirectToAction(nameof(Index));
+                await _uow.MenuItemRepository.UpdateAsync(menuItem);
+                return RedirectToAction(nameof(Index), new { menuid = menuItem.MenuId });
             }
-            return View(menuitem);
+            ViewBag.Id = menuid;
+            return View(menuItem);
         }
     }
 }
