@@ -178,7 +178,7 @@ namespace ItGeek.Web.Areas.Admin.Controllers
 			ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
 			ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
 			ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(id);
-			ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(id);
+			ViewBag.PostAuthors = await _uow.PostAuthorRepository.ListByPostIdAsync(id);
             ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
             ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
             return View(postViewModel);
@@ -245,6 +245,19 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 }
             }
             return uniqueFileName;
+        }
+        public async Task<JsonResult> GetTagByName(string tag)
+        {
+
+            List<Tag> result = await _uow.TagRepository.GetTagByNameAsync(tag);
+
+            List<string> res = new List<string>();
+            foreach (Tag item in result)
+            {
+                res.Add(item.Name);
+            }
+
+            return Json(res);
         }
 
     }
