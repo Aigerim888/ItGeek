@@ -10,8 +10,8 @@ namespace ItGeek.DAL.Entities
 	public class AuthorSocial:BaseEntity
 	{
 		public int AuthorId { get; set; }
-		public Author Author { get; set; }
+		public virtual Author? Author { get; set; }
 		public SocialName SocialName { get; }	
-		public string SocailLink { get; set; }
+		public string SocialLink { get; set; }
 	}
 }

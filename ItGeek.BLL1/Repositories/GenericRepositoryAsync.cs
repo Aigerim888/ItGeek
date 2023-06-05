@@ -24,7 +24,7 @@ namespace ItGeek.BLL1.Repositories
 		}
 		public async Task<T> GetByIdAsync(int id)
 		{
-			return await _db.Set<T>().FirstAsync();
+			return await _db.Set<T>().FindAsync(id);
 		}
 		public async Task<T> InsertAsync(T entity)
 		{

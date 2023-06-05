@@ -13,7 +13,7 @@ namespace ItGeek.DAL.Entities
 		public string Url { get;set; }
 		public string Message { get;set; }
 		public DateTime CreatedAt { get;set; }
-		public List<PostComment> PostComments { get; } = new();
+		public List<Post> Posts { get; } = new();
 
 	}
 }
