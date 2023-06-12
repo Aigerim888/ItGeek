@@ -30,6 +30,7 @@ namespace ItGeek.BLL1
         private PostContentRepository _postContentRepository;
         private PostAuthorRepository _postAuthorRepository;
         private PostCategoryRepository _postCategoryRepository;
+        private PostTagRepository _postTagRepository;
 
 
         public AuthorRepository AuthorRepository
@@ -187,5 +188,17 @@ namespace ItGeek.BLL1
                 return _postAuthorRepository;
             }
         }
+        public PostTagRepository PostTagRepository
+        {
+            get
+            {
+                if(_postTagRepository == null)
+                {
+                    _postTagRepository=new PostTagRepository(_db);
+                }
+                return _postTagRepository;
+            }
+        }
+
     }
 }

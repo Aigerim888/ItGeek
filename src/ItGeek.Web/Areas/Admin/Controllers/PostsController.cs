@@ -1,10 +1,17 @@
-﻿using ItGeek.BLL1;
-using ItGeek.DAL.Entities;
-using ItGeek.Web.Areas.Admin.ViewModels;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using ItGeek.DAL.Entities;
+using ItGeek.BLL;
+using ItGeek.Web.Areas.Admin.ViewModels;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http.HttpResults;
+using static System.Net.Mime.MediaTypeNames;
+using ItGeek.BLL1;
 
 namespace ItGeek.Web.Areas.Admin.Controllers
 {
@@ -19,36 +26,38 @@ namespace ItGeek.Web.Areas.Admin.Controllers
             _uow = uow;
             _hostEnvironment = hostEnvironment;
         }
+
         public async Task<IActionResult> Index()
         {
             List<Post> allPosts = (List<Post>)await _uow.PostRepository.ListAllAsync();
             List<PostContent> allPostsContent = (List<PostContent>)await _uow.PostContentRepository.ListAllAsync();
-
+            
+            
             List<PostViewModel> post = new List<PostViewModel>();
             foreach (var onePost in allPosts)
             {
-                PostContent onePostsContent = allPostsContent.First(x => x.PostId == onePost.Id);
+                PostContent onePostsContent = allPostsContent.First(x=>x.PostId == onePost.Id);
                 post.Add(new PostViewModel()
-                {
-                    Id = onePost.Id,
-                    Slug = onePost.Slug,
-                    IsDeleted = onePost.IsDeleted,
-                    Title = onePostsContent.Title,
-                    PostBody = onePostsContent.PostBody,
-                    PostImage = onePostsContent.PostImage,
-                    CommentsClosed = onePostsContent.CommentsClosed,
-                }
+                    {
+                        Id = onePost.Id,
+                        Slug = onePost.Slug,
+                        IsDeleted = onePost.IsDeleted,
+                        Title = onePostsContent.Title,
+                        PostBody = onePostsContent.PostBody,
+                        PostImage = onePostsContent.PostImage,
+                        CommentsClosed = onePostsContent.CommentsClosed,
+                    }
                 );
             }
-
+            
             return View(post);
         }
-
 
         public async Task<IActionResult> Details(int id)
         {
             Post post = await _uow.PostRepository.GetByIdAsync(id);
-            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIDAsync(id);
+
             PostViewModel postViewModel = new PostViewModel()
             {
                 Id = id,
@@ -58,25 +67,23 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 PostBody = postContent.PostBody,
                 PostImage = postContent.PostImage,
                 CommentsClosed = postContent.CommentsClosed
-                
             };
 
             return View(postViewModel);
         }
+
         public async Task<IActionResult> Delete(int id)
         {
-            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIDAsync(id);
             if (postContent != null)
             {
                 await _uow.PostContentRepository.DeleteAsync(postContent);
             }
-          
             Post post = await _uow.PostRepository.GetByIdAsync(id);
-            if(post!=null)
+            if (post != null)
             {
                 await _uow.PostRepository.DeleteAsync(post);
             }
-           
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
@@ -96,6 +103,7 @@ namespace ItGeek.Web.Areas.Admin.Controllers
             if (ModelState.IsValid)
             {
                 postViewModel.PostImage = await ProcessUploadFile(postViewModel);
+
                 Post post = new Post()
                 {
                     Id = postViewModel.Id,
@@ -113,23 +121,37 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                     PostImage = postViewModel.PostImage,
                     CommentsNum = 0,
                     CommentsClosed = postViewModel.CommentsClosed
-
                 };
+
 				await _uow.PostRepository.InsertAsync(post);
 				await _uow.PostContentRepository.InsertAsync(postContent);
 
-				foreach (int catId in postViewModel.CategoryId)
+                string[] tagsNames = postViewModel.TagIds.Split(new char[] { ',' });
+
+                foreach (string tagName in tagsNames)
                 {
-					PostCategory postCategory = new PostCategory()
-					{
-						PostId = post.Id,
-						CategoryId = catId
-					};
-					await _uow.PostCategoryRepository.InsertAsync(postCategory);
+                    int tagId = await _uow.PostTagRepository.GetTagIdByName(tagName.Trim());
+                    if (tagId != 0)
+                    {
+                        PostTag postTag = new PostTag()
+                        {
+                            PostId = post.Id,
+                            TagId = tagId
+                        };
+                        await _uow.PostTagRepository.InsertAsync(postTag);
+                    }
+                }
+
+                foreach (int catId in postViewModel.CategoryId)
+                {
+                    PostCategory postCategory = new PostCategory()
+				    {    
+                        PostId = post.Id,
+					    CategoryId = catId
+				    };
+                    await _uow.PostCategoryRepository.InsertAsync(postCategory);
 				}
-               
-			
-                foreach(int authId in postViewModel.AuthorId)
+				foreach (int authId in postViewModel.AuthorId)
                 {
 					PostAuthor postAuthor = new PostAuthor()
 					{
@@ -138,20 +160,15 @@ namespace ItGeek.Web.Areas.Admin.Controllers
 					};
 					await _uow.PostAuthorRepository.InsertAsync(postAuthor);
 				}
-				
 				return RedirectToAction(nameof(Index));
-
             }
-
             ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
             ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
             ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(postViewModel.Id);
-            ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.PostAuthors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
             ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
             ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
-
             return View(postViewModel);
-
         }
         [HttpGet]
         public async Task<IActionResult> Update(int id)
@@ -161,26 +178,31 @@ namespace ItGeek.Web.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-           
-            PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(id);
-            //PostAuthor postAuthor = await _uow.PostAuthorRepository.GetByIdAsync();
+            PostContent postContent = await _uow.PostContentRepository.GetByPostIDAsync(id);
+            
+            string tagNames = await _uow.PostTagRepository.GetByPostIDAsync(id);
+
             PostViewModel postViewModel = new PostViewModel()
             {
-                Id= id, 
+                Id = id,
                 Slug = post.Slug,
                 IsDeleted = post.IsDeleted,
                 Title = postContent.Title,
                 PostBody = postContent.PostBody,
                 PostImage = postContent.PostImage,
-                CommentsClosed = postContent.CommentsClosed
-               
+                CommentsClosed = postContent.CommentsClosed,
+                TagIds = tagNames
             };
+
+
+
 			ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
 			ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
 			ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(id);
 			ViewBag.PostAuthors = await _uow.PostAuthorRepository.ListByPostIdAsync(id);
             ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
             ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
+
             return View(postViewModel);
         }
         [HttpPost]
@@ -193,42 +215,73 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 post.Slug = postViewModel.Slug;
                 post.IsDeleted = postViewModel.IsDeleted;
                 post.EditedAt = DateTime.Now;
-                //TODO:post.EditedBy = User;
+                //TODO: post.EditedBy = User;
 
                 await _uow.PostRepository.UpdateAsync(post);
 
-                //Получим Постконтент
-                PostContent postContent = await _uow.PostContentRepository.GetByPostIdAsync(postViewModel.Id);
-                
-                //Заполняем Пост контент из формы
-                
+                // Получим Пост контент
+                PostContent postContent = await _uow.PostContentRepository.GetByPostIDAsync(postViewModel.Id);
+
+                // Заполняем Пост контент из формы
                 postContent.Title = postViewModel.Title;
                 postContent.PostBody = postViewModel.PostBody;
                 postContent.CommentsClosed = postViewModel.CommentsClosed;
 
-                //Получим новую картинку
+                // Получили новую картинку 
                 if (postViewModel.ImageFile != null)
                 {
                     string newImage = await ProcessUploadFile(postViewModel);
                     postContent.PostImage = newImage;
-                    
+
                     //TODO удалить старую картинку
                 }
-
                 await _uow.PostContentRepository.UpdateAsync(postContent);
 
-                return RedirectToAction(nameof(Index));
+                //qwe
+                string[] tagsNames = postViewModel.TagIds.Split(new char[] { ',' });
+                // [qwe, qweret, qwe]
 
+                await _uow.PostTagRepository.DeleteByPostIdAsync(post.Id);
+                foreach (string tagName in tagsNames)
+                {
+                    Tag tag = await _uow.TagRepository.GetOneTagByNameAsync(tagName);
+                    if(tag != null)
+                    {
+                        PostTag postTag = new PostTag()
+                        {
+                            PostId = post.Id,
+                            TagId = tag.Id
+                        };
+                        await _uow.PostTagRepository.InsertAsync(postTag);
+                    }
+                }
+
+                await _uow.PostAuthorRepository.DeleteByPostIdAsync(post.Id);
+                foreach (int authId in postViewModel.AuthorId)
+                {
+                    Author haveAuthor = await _uow.AuthorRepository.GetByIdAsync(authId);
+                    if (haveAuthor != null)
+                    {
+                        PostAuthor postAuthor = new PostAuthor()
+                        {
+                            PostId = post.Id,
+                            AuthorId = authId
+                        };
+                        await _uow.PostAuthorRepository.InsertAsync(postAuthor);
+                    }
+                }
+
+                return RedirectToAction(nameof(Index));
             }
             ViewBag.Authors = await _uow.AuthorRepository.ListAllAsync();
             ViewBag.Categories = await _uow.CategoryRepository.ListAllAsync();
             ViewBag.PostCategories = await _uow.PostCategoryRepository.ListByPostIdAsync(postViewModel.Id);
-            ViewBag.Authors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
+            ViewBag.PostAuthors = await _uow.PostAuthorRepository.ListByPostIdAsync(postViewModel.Id);
             ViewBag.CategoryCount = ((IEnumerable<int>)ViewBag.PostCategories).ToList().Count;
             ViewBag.AuthorCount = ((IEnumerable<int>)ViewBag.PostAuthors).ToList().Count;
             return View(postViewModel);
-
         }
+
         protected async Task<string> ProcessUploadFile(PostViewModel postViewModel)
         {
             string uniqueFileName = "";
@@ -239,7 +292,7 @@ namespace ItGeek.Web.Areas.Admin.Controllers
                 string fileExtension = Path.GetExtension(postViewModel.ImageFile.FileName);
                 uniqueFileName = fileName + DateTime.Now.ToString("yymmddssfff") + fileExtension;
                 string path = Path.Combine(wwwRootPath + "/uploads/", uniqueFileName);
-                using (var fileStream = new FileStream(path, FileMode.Create))
+                using(var fileStream = new FileStream(path, FileMode.Create))
                 {
                     await postViewModel.ImageFile.CopyToAsync(fileStream);
                 }
@@ -259,7 +312,5 @@ namespace ItGeek.Web.Areas.Admin.Controllers
 
             return Json(res);
         }
-
     }
-    }
-
+}

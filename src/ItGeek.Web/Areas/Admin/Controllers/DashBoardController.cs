@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ItGeek.DAL.Enum;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ItGeek.Web.Areas.Admin.Controllers
 {
-	public class DashBoardController : Controller
+	[Area("Admin")]
+	[Authorize(Roles = "4")]
+	public class DashboardController : Controller
 	{
-		[Area("Admin")]
 		public IActionResult Index()
 		{
 			return View();

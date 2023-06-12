@@ -1,4 +1,5 @@
-﻿using ItGeek.DAL.Data;
+﻿using ItGeek.BLL.Repositories;
+using ItGeek.DAL.Data;
 using ItGeek.DAL.Entities;
 using ItGeek.DAL.Interfaces;
 using System;

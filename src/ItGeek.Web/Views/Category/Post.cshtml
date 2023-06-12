@@ -1,9 +1,12 @@
-﻿@model PostContentViewModel
+﻿@*@model PostContentViewModel*@
+@model ItGeek.DAL.Entities.Post
+
 @{
-	ViewData["Title"] = @Model.postContent.Title;
+	ViewBag.Title = Model.PostContents.Title;
 }
-<header class="page-header overlay" style="background-image: url(/uploads/@Model.postContent.PostImage)">
-	
+
+<header class="page-header overlay" style="background-image: url('/uploads/@Model.PostContents.PostImage')">
+
 	<div class="page-header-content">
 		<div class="container">
 			<div class="row">
@@ -11,16 +14,16 @@
 
 					<div class="page-header-meta">
 
-						<a href="#" class="page-category-link">@Model.category.Name</a> <span class="date">21/06/2023</span>
+						<a href="#" class="page-category-link">cat</a> <span class="date">21/06/2023</span>
 
-						<h1>@Model.postContent.Title</h1>
+						<h1>@Model.PostContents.Title</h1>
 
 						<div class="item-social">
 							<div class="item-comments" title="Количество комментариев">
-								<i class="fa fa-comment"></i><a href="#comments_thread" class="item-comments-count">@Model.postContent.CommentsNum</a>
+								<i class="fa fa-comment"></i><a href="#comments_thread" class="item-comments-count">@Model.PostContents.CommentsNum</a>
 							</div>
 							<div class="fa fa-share-alt" title="Поделиться в соц. сетях"></div>
-							<div class="likely likely-custom" data-media="/uploads/@Model.postContent.PostImage" data-title=@Model.postContent.Title>
+							<div class="likely likely-custom" data-media="/uploads/@Model.PostContents.PostImage" data-title="@Model.PostContents.Title">
 								<div class="vkontakte" title="Поделиться Вконтакте">Вконтакте</div>
 								<div class="facebook" title="Поделиться в Facebook">Facebook</div>
 								<div class="twitter" title="Поделиться в Twitter">Twitter</div>
@@ -47,23 +50,23 @@
 					<nav class="breadcrumbs">
 						<ul>
 							<li><a href="/">Главная</a></li>
-							<li><a href="#">@Model.category.Name</a></li>
-							<li class="active">@Model.postContent.Title</li>
+							<li><a href="#">category</a></li>
+							<li class="active">@Model.PostContents.Title</li>
 						</ul>
 					</nav>
 
 					<div class="article-body">
 
 						<div class="ad article-top-ad">
-							<img src="img/ad-horizontal.jpg" alt="alt" class="~/img-responsive">
+							<img src="~/img/ad-horizontal.jpg" alt="alt" class="img-responsive">
 						</div>
 
-						@Html.Raw(Model.postContent.PostBody)
-
+						@Html.Raw(Model.PostContents.PostBody)
+						
 					</div>
 
 					<div class="likely-on-page">
-						<div class="likely" data-media="/uploads/@Model.postContent.PostImage" data-title=@Model.postContent.Title>
+						<div class="likely" data-media="/uploads/@Model.PostContents.PostImage" data-title="@Model.PostContents.Title">
 							<div class="vkontakte" title="Поделиться Вконтакте">Вконтакте</div>
 							<div class="facebook" title="Поделиться в Facebook">Facebook</div>
 							<div class="twitter" title="Поделиться в Twitter">Twitter</div>
@@ -79,16 +82,18 @@
 					<div class="read-more">
 						<div class="read-more-header">Читать еще:</div>
 						<ul>
-							@foreach(var postElse in Model.postContents)
+							@foreach (var postElse in Model.Categories.ToList())
 							{
-								<li><a asp-controller="Category" 
-									asp-action="Post" 
-									asp-route-categorySlug="@Model.category.Slug"
-								    asp-route-postSlug="#">									
-									@postElse.Title
-								</a>
-							</li>
-							}							
+								<li>
+									<a 
+										asp-controller="Category" 
+										asp-action="Post"
+								   asp-route-categorySlug="category Slug"
+										asp-route-postSlug="#">
+										@postElse.Name
+									</a>
+								</li>
+							}
 						</ul>
 					</div>
 
